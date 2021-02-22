@@ -111,6 +111,8 @@ window(20, 20, 160, 220)
 window(280, 20, 200, 220)
 cat(250, 360, 350, 200)
 knit(260, 515, 10)
+knit(400, 640, 25)
+cat(50, 550, 150, 105)
 
 pygame.display.update()
 while True:
