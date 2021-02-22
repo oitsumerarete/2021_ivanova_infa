@@ -9,6 +9,13 @@ pi = 3.14
 
 
 def window(x0, y0, width, length):
+    '''
+    Функция отображает окно в заданном месте
+    :param x0: координата левого верхнего угла окна по оси Х
+    :param y0: координата левого верхнего угла окна по оси У
+    :param width: ширина окна (ось Х)
+    :param length: длина окна (ось У)
+    '''
     rect(screen, (197, 241, 233), (x0, y0, width, length))
     rect(screen, (28, 224, 242), (x0 + 0.05*width, y0 + 0.045*length, 0.425*width, 0.25*length))
     rect(screen, (28, 224, 242), (x0 + 0.53 * width, y0 + 0.045 * length, 0.425*width, 0.25*length))
@@ -17,6 +24,12 @@ def window(x0, y0, width, length):
 
 
 def cat(x0, y0, length, width):
+    '''
+    :param x0: координата верхнего левого угла кошки по оХ
+    :param y0: координата верхнего левого угла кошки по оУ
+    :param length: длина кошки (оХ)
+    :param width: ширина кошки (оУ)
+    '''
     tale = pygame.Surface((length, width))  # tale
     tale.fill((195, 144, 20))
     ellipse(tale, (255, 140, 51), (0, 0, 0.6 * length, 0.34 * width))
@@ -87,6 +100,11 @@ def cat(x0, y0, length, width):
 
 
 def knit(x0, y0, r):
+    '''
+    :param x0: центр клубочка по оХ
+    :param y0: центр клубочка оУ
+    :param r: радиус клубочка
+    '''
     circle(screen, 'grey', (x0, y0), r)
     circle(screen, 'black', (x0, y0), r, 1)
     arc(screen, 'black', (x0 - 0.75*r, y0 - 0.5*r, 1.62*r, 1.75*r), 0.1*pi, 0.55*pi)
@@ -102,6 +120,7 @@ def knit(x0, y0, r):
 # background
 rect(screen, (128, 85, 23), (0, 0, 600, 350))
 rect(screen, (195, 144, 20), (0, 350, 600, 450))
+# everything else
 window(20, 20, 160, 220)
 window(280, 20, 200, 220)
 cat(250, 360, 350, 200)
