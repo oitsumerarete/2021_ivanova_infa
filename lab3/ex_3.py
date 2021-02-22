@@ -8,11 +8,6 @@ screen = pygame.display.set_mode((600, 800))
 pi = 3.14
 
 
-#def background(width, length):
- #   rect(screen, (128, 85, 23), (0, 0, width, length))
-  #  rect(screen, (195, 144, 20), (0, length, width, length + ))
-
-
 def window(x0, y0, width, length):
     rect(screen, (197, 241, 233), (x0, y0, width, length))
     rect(screen, (28, 224, 242), (x0 + 0.05*width, y0 + 0.045*length, 0.425*width, 0.25*length))
@@ -104,7 +99,7 @@ def knit(x0, y0, r):
     arc(screen, 'grey', (x0 - 3.225 * r, y0 + 0.9 * r, 2 * r, 1.5 * r), 0.2 * pi, 0.8 * pi)
 
 
-#background(400, 600)
+# background
 rect(screen, (128, 85, 23), (0, 0, 600, 350))
 rect(screen, (195, 144, 20), (0, 350, 600, 450))
 window(20, 20, 160, 220)
