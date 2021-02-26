@@ -8,29 +8,29 @@ pygame.init()
 FPS = 30
 clock = pygame.time.Clock()
 
-screen = pygame.display.set_mode((600, 800))
+screen = pygame.display.set_mode((600, 800))  # основной экран
 
-night_light = pygame.Surface((600, 800))
+night_light = pygame.Surface((600, 800))  # поверхность для ночного затемнения
 night_light.fill((58, 58, 58))
 night_light.set_colorkey('BLACK')
 night_light.set_alpha(128)
 
-LIGHT_COLOR_WINDOW = (197, 241, 233)
+LIGHT_COLOR_WINDOW = (197, 241, 233)  # основные цвета
 DARK_COLOR_WINDOW = (25, 35, 25)
 NIGHT_EYE_COLOR = 'GREEN'
 LIGHT_EYE_COLOR = (60, 150, 60)
 SLEEP_EYE_COLOR = (235, 130, 51)
 
-knit_speed = 10
+knit_speed = 10  # скорость и время движения прягыющего клубка
 counter_of_knit_ticks = 0
 
-finished = False
-day = False
+finished = False  # закончился ли просмотр
+day = True  # день или недень (ночь)
 
 
 def window(x0, y0, width, length, day_):
     """
-    Функция отображает окно в заданном месте
+    Функция отображает окно (домовое) в заданном месте
     :param x0: координата левого верхнего угла окна по оси Х
     :param y0: координата левого верхнего угла окна по оси У
     :param width: ширина окна (ось Х)
@@ -52,6 +52,7 @@ def window(x0, y0, width, length, day_):
 
 def cat(x0, y0, length, width, day_, how_long_is_night, how_long_is_day, active_in_night=True):
     """
+    Рисует целого кота
     :param x0: координата верхнего левого угла кошки по оХ
     :param y0: координата верхнего левого угла кошки по оУ
     :param length: длина кошки (оХ)
@@ -87,6 +88,38 @@ def cat(x0, y0, length, width, day_, how_long_is_night, how_long_is_day, active_
     draw.ellipse(screen, (255, 140, 51), (x0, y0 + 0.025 * width, 0.335 * length, 0.5 * width))  # head
     draw.ellipse(screen, 'black', (x0, y0 + 0.025 * width, 0.34 * length, 0.5 * width), 1)
 
+    # рисуем динамическую мордочку с помощью функции
+    draw_cat_face(x0, y0, length, width, day_, how_long_is_night, how_long_is_day, active_in_night)
+
+
+def draw_cat_face(x0, y0, length, width, day_, how_long_is_night, how_long_is_day, active_in_night):
+    """
+    Рисует коту лицо
+    В функцию передаются параметры кота (функции cat в соответсвующие поля)
+    :param x0: координата верхнего левого угла кошки по оХ
+    :param y0: координата верхнего левого угла кошки по оУ
+    :param length: длина кошки (оХ)
+    :param width: ширина кошки (оУ)
+    :param day_: ширина кошки (оУ)
+    :param active_in_night: активени ли кот ночью (если нет, то заснёт через 2 секунды,впрочем это можно контролировать)
+    :param how_long_is_night: количество ночи в тиках (30 = 1 секунда)
+    :param how_long_is_day: количество дня в тиках (30 = 1 секунда)
+    """
+
+    draw_cat_ears(x0, y0, length, width)
+    draw_cat_eye(x0, y0, length, width, day_, how_long_is_night, how_long_is_day, active_in_night)
+    draw_cat_mouth(x0, y0, length, width)
+
+
+def draw_cat_ears(x0, y0, length, width):
+    """
+    Рисует коту ушки в зависимости от переданных значений параметров
+    В функцию передаются параметры кота (функции cat в соответсвующие поля)
+    :param x0: координата верхнего левого угла кошки по оХ
+    :param y0: координата верхнего левого угла кошки по оУ
+    :param length: длина кошки (оХ)
+    :param width: ширина кошки (оУ)
+    """
     draw.polygon(screen, (255, 140, 51),
                  [(x0 + 0.22 * length, y0 + 0.075 * width), (x0 + 0.28 * length, y0 + 0.175 * width),
                   (x0 + 0.31 * length, y0)])
@@ -110,8 +143,21 @@ def cat(x0, y0, length, width, day_, how_long_is_night, how_long_is_day, active_
                  [(x0 + 0.084 * length, y0 + 0.075 * width), (x0 + 0.047 * length, y0 + 0.14 * width),
                   (x0 + 0.041 * length, y0 + 0.04 * width)], 1)
 
-    eye_color = LIGHT_EYE_COLOR
 
+def draw_cat_eye(x0, y0, length, width, day_, how_long_is_night, how_long_is_day, active_in_night):
+    """
+    Рисует коту глазки в зависимости от переданных значений параметров
+    В функцию передаются параметры кота (функции cat в соответсвующие поля)
+    :param x0: координата верхнего левого угла кошки по оХ
+    :param y0: координата верхнего левого угла кошки по оУ
+    :param length: длина кошки (оХ)
+    :param width: ширина кошки (оУ)
+    :param day_: ширина кошки (оУ)
+    :param active_in_night: активени ли кот ночью (если нет, то заснёт через 2 секунды,впрочем это можно контролировать)
+    :param how_long_is_night: количество ночи в тиках (30 = 1 секунда)
+    :param how_long_is_day: количество дня в тиках (30 = 1 секунда)
+    """
+    eye_color = LIGHT_EYE_COLOR  # переменная содержит в себе нужный цвет глаз
     if not day_:
         if active_in_night:
             eye_color = NIGHT_EYE_COLOR
@@ -125,11 +171,12 @@ def cat(x0, y0, length, width, day_, how_long_is_night, how_long_is_day, active_
             eye_color = SLEEP_EYE_COLOR
         else:
             eye_color = LIGHT_EYE_COLOR
-
+    # общий контур глаз
     draw.ellipse(screen, eye_color, (x0 + 0.196 * length, y0 + 0.175 * width, 0.07 * length, 0.15 * width))
     draw.ellipse(screen, 'black', (x0 + 0.196 * length, y0 + 0.175 * width, 0.07 * length, 0.15 * width), 1)
     draw.ellipse(screen, eye_color, (x0 + 0.07 * length, y0 + 0.175 * width, 0.07 * length, 0.15 * width))
     draw.ellipse(screen, 'black', (x0 + 0.07 * length, y0 + 0.175 * width, 0.07 * length, 0.15 * width), 1)
+    # зрачок и блики
     if ((active_in_night or day or how_long_is_night < 59) and how_long_is_day > 30) or active_in_night:
         draw.ellipse(screen, 'black', (x0 + 0.24 * length, y0 + 0.2 * width, 0.014 * length, 0.1 * width))
         white_el_in_eye = pygame.Surface((0.042 * length, 0.025 * width))
@@ -139,6 +186,15 @@ def cat(x0, y0, length, width, day_, how_long_is_night, how_long_is_day, active_
         draw.ellipse(screen, 'black', (x0 + 0.11 * length, y0 + 0.2 * width, 0.014 * length, 0.1 * width))
         screen.blit(pygame.transform.rotate(white_el_in_eye, 110), (x0 + 0.084 * length, y0 + 0.2 * width))
 
+
+def draw_cat_mouth(x0, y0, length, width):
+    """
+    В функцию передаются параметры кота (функции cat в соответсвующие поля) и она рисует мордочку и усы
+    :param x0: координата верхнего левого угла кошки по оХ
+    :param y0: координата верхнего левого угла кошки по оУ
+    :param length: длина кошки (оХ)
+    :param width: ширина кошки (оУ)
+    """
     draw.polygon(screen, (243, 163, 238),
                  [(x0 + 0.154 * length, y0 + 0.35 * width), (x0 + 0.18 * length, y0 + 0.35 * width),
                   (x0 + 0.166 * length, y0 + 0.39 * width)])
@@ -198,8 +254,12 @@ counter_of_night_ticks = 0
 counter_of_day_ticks = 0
 if not day:
     counter_of_night_ticks = 61
-
+if day:
+    counter_of_day_ticks = 61
 pygame.display.update()
+
+# основной цикл отрисовки
+
 while not finished:
     clock.tick(FPS)
     counter_of_knit_ticks += 1
