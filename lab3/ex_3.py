@@ -23,7 +23,6 @@ SLEEP_EYE_COLOR = (235, 130, 51)
 
 knit_speed = 10
 counter_of_knit_ticks = 0
-counter_of_night_ticks = 0
 
 finished = False
 day = False
@@ -51,7 +50,7 @@ def window(x0, y0, width, length, day_):
     draw.rect(screen, color, (x0 + 0.53 * width, y0 + 0.34 * length, 0.425 * width, 0.59 * length))
 
 
-def cat(x0, y0, length, width, day_, how_long_is_night, active_in_night=True):
+def cat(x0, y0, length, width, day_, how_long_is_night, how_long_is_day, active_in_night=True):
     """
     :param x0: координата верхнего левого угла кошки по оХ
     :param y0: координата верхнего левого угла кошки по оУ
@@ -59,7 +58,8 @@ def cat(x0, y0, length, width, day_, how_long_is_night, active_in_night=True):
     :param width: ширина кошки (оУ)
     :param day_: ширина кошки (оУ)
     :param active_in_night: активени ли кот ночью (если нет, то заснёт через 2 секунды,впрочем это можно контролировать)
-    :param how_long_is_night: ширина кошки (оУ)
+    :param how_long_is_night: количество ночи в тиках (30 = 1 секунда)
+    :param how_long_is_day: количество дня в тиках (30 = 1 секунда)
     """
     tale = pygame.Surface((length, width))  # tale
     tale.fill((195, 144, 20))
@@ -120,12 +120,17 @@ def cat(x0, y0, length, width, day_, how_long_is_night, active_in_night=True):
                 eye_color = SLEEP_EYE_COLOR
             else:
                 eye_color = NIGHT_EYE_COLOR
+    if day_:
+        if not active_in_night and how_long_is_day < 30:
+            eye_color = SLEEP_EYE_COLOR
+        else:
+            eye_color = LIGHT_EYE_COLOR
 
     draw.ellipse(screen, eye_color, (x0 + 0.196 * length, y0 + 0.175 * width, 0.07 * length, 0.15 * width))
     draw.ellipse(screen, 'black', (x0 + 0.196 * length, y0 + 0.175 * width, 0.07 * length, 0.15 * width), 1)
     draw.ellipse(screen, eye_color, (x0 + 0.07 * length, y0 + 0.175 * width, 0.07 * length, 0.15 * width))
     draw.ellipse(screen, 'black', (x0 + 0.07 * length, y0 + 0.175 * width, 0.07 * length, 0.15 * width), 1)
-    if active_in_night or day or how_long_is_night < 59:
+    if ((active_in_night or day or how_long_is_night < 59) and how_long_is_day > 30) or active_in_night:
         draw.ellipse(screen, 'black', (x0 + 0.24 * length, y0 + 0.2 * width, 0.014 * length, 0.1 * width))
         white_el_in_eye = pygame.Surface((0.042 * length, 0.025 * width))
         white_el_in_eye.set_colorkey('BLACK')
@@ -189,6 +194,11 @@ def roll_knit(counter_of_ticks, knit_speed_):
 draw.rect(screen, (128, 85, 23), (0, 0, 600, 350))
 draw.rect(screen, (195, 144, 20), (0, 350, 600, 450))
 
+counter_of_night_ticks = 0
+counter_of_day_ticks = 0
+if not day:
+    counter_of_night_ticks = 61
+
 pygame.display.update()
 while not finished:
     clock.tick(FPS)
@@ -198,24 +208,27 @@ while not finished:
             finished = True
         if event.type == pygame.KEYDOWN:
             day = not day
-            counter_of_night_ticks = 0
+            if day:
+                counter_of_night_ticks = 0
+                counter_of_day_ticks = 0
         if (event.type == pygame.MOUSEBUTTONDOWN) and (counter_of_knit_ticks > 60):
             counter_of_knit_ticks = 0
     if not day:
         counter_of_night_ticks += 1
+    if day:
+        counter_of_day_ticks += 1
     draw.rect(screen, (128, 85, 23), (0, 0, 600, 350))
     draw.rect(screen, (195, 144, 20), (0, 350, 600, 450))
     window(20, 20, 160, 220, day)
     window(280, 20, 200, 220, day)
-    cat(250, 360, 350, 200, day, counter_of_night_ticks, active_in_night=False)
+    cat(250, 360, 350, 200, day, counter_of_night_ticks, counter_of_day_ticks, active_in_night=True)
     knit(260, 515, 20, screen)
-    cat(150, 550, 200, 150, day, counter_of_night_ticks, active_in_night=False)
+    cat(150, 550, 200, 150, day, counter_of_night_ticks, counter_of_day_ticks, active_in_night=False)
 
     roll_knit(counter_of_knit_ticks, knit_speed)
 
     if not day:
         screen.blit(night_light, (0, 0))
     pygame.display.update()
-    print(counter_of_night_ticks)
 
 pygame.quit()
