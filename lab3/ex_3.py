@@ -21,16 +21,25 @@ NIGHT_EYE_COLOR = 'GREEN'
 LIGHT_EYE_COLOR = (60, 150, 60)
 SLEEP_EYE_COLOR = (235, 130, 51)
 
+knit_speed = 10
+counter_of_knit_ticks = 0
+counter_of_night_ticks = 0
 
-def window(x0, y0, width, length, day):
-    '''
+finished = False
+day = False
+
+
+def window(x0, y0, width, length, day_):
+    """
     Функция отображает окно в заданном месте
     :param x0: координата левого верхнего угла окна по оси Х
     :param y0: координата левого верхнего угла окна по оси У
     :param width: ширина окна (ось Х)
     :param length: длина окна (ось У)
-    '''
-    if day == True:
+    :param day_: день или недень
+    """
+
+    if day_:
         color = LIGHT_COLOR_WINDOW
     else:
         color = DARK_COLOR_WINDOW
@@ -42,13 +51,16 @@ def window(x0, y0, width, length, day):
     draw.rect(screen, color, (x0 + 0.53 * width, y0 + 0.34 * length, 0.425 * width, 0.59 * length))
 
 
-def cat(x0, y0, length, width, day, active_in_night=True):
-    '''
+def cat(x0, y0, length, width, day_, how_long_is_night, active_in_night=True):
+    """
     :param x0: координата верхнего левого угла кошки по оХ
     :param y0: координата верхнего левого угла кошки по оУ
     :param length: длина кошки (оХ)
     :param width: ширина кошки (оУ)
-    '''
+    :param day_: ширина кошки (оУ)
+    :param active_in_night: активени ли кот ночью (если нет, то заснёт через 2 секунды,впрочем это можно контролировать)
+    :param how_long_is_night: ширина кошки (оУ)
+    """
     tale = pygame.Surface((length, width))  # tale
     tale.fill((195, 144, 20))
     draw.ellipse(tale, (255, 140, 51), (0, 0, 0.6 * length, 0.34 * width))
@@ -98,26 +110,29 @@ def cat(x0, y0, length, width, day, active_in_night=True):
                  [(x0 + 0.084 * length, y0 + 0.075 * width), (x0 + 0.047 * length, y0 + 0.14 * width),
                   (x0 + 0.041 * length, y0 + 0.04 * width)], 1)
 
-    EYE_COLOR = LIGHT_EYE_COLOR
+    eye_color = LIGHT_EYE_COLOR
 
-    if not day:
+    if not day_:
         if active_in_night:
-            EYE_COLOR = NIGHT_EYE_COLOR
+            eye_color = NIGHT_EYE_COLOR
         else:
-            EYE_COLOR = SLEEP_EYE_COLOR
+            if how_long_is_night > 60:
+                eye_color = SLEEP_EYE_COLOR
+            else:
+                eye_color = NIGHT_EYE_COLOR
 
-    draw.ellipse(screen, EYE_COLOR, (x0 + 0.196 * length, y0 + 0.175 * width, 0.07 * length, 0.15 * width))
+    draw.ellipse(screen, eye_color, (x0 + 0.196 * length, y0 + 0.175 * width, 0.07 * length, 0.15 * width))
     draw.ellipse(screen, 'black', (x0 + 0.196 * length, y0 + 0.175 * width, 0.07 * length, 0.15 * width), 1)
-    draw.ellipse(screen, EYE_COLOR, (x0 + 0.07 * length, y0 + 0.175 * width, 0.07 * length, 0.15 * width))
+    draw.ellipse(screen, eye_color, (x0 + 0.07 * length, y0 + 0.175 * width, 0.07 * length, 0.15 * width))
     draw.ellipse(screen, 'black', (x0 + 0.07 * length, y0 + 0.175 * width, 0.07 * length, 0.15 * width), 1)
-    if active_in_night or day:
+    if active_in_night or day or how_long_is_night < 59:
         draw.ellipse(screen, 'black', (x0 + 0.24 * length, y0 + 0.2 * width, 0.014 * length, 0.1 * width))
-        blick = pygame.Surface((0.042 * length, 0.025 * width))
-        blick.set_colorkey('BLACK')
-        draw.ellipse(blick, 'white', (0, 0, 0.042 * length, 0.025 * width))
-        screen.blit(pygame.transform.rotate(blick, 110), (x0 + 0.21 * length, y0 + 0.2 * width))
+        white_el_in_eye = pygame.Surface((0.042 * length, 0.025 * width))
+        white_el_in_eye.set_colorkey('BLACK')
+        draw.ellipse(white_el_in_eye, 'white', (0, 0, 0.042 * length, 0.025 * width))
+        screen.blit(pygame.transform.rotate(white_el_in_eye, 110), (x0 + 0.21 * length, y0 + 0.2 * width))
         draw.ellipse(screen, 'black', (x0 + 0.11 * length, y0 + 0.2 * width, 0.014 * length, 0.1 * width))
-        screen.blit(pygame.transform.rotate(blick, 110), (x0 + 0.084 * length, y0 + 0.2 * width))
+        screen.blit(pygame.transform.rotate(white_el_in_eye, 110), (x0 + 0.084 * length, y0 + 0.2 * width))
 
     draw.polygon(screen, (243, 163, 238),
                  [(x0 + 0.154 * length, y0 + 0.35 * width), (x0 + 0.18 * length, y0 + 0.35 * width),
@@ -136,63 +151,71 @@ def cat(x0, y0, length, width, day, active_in_night=True):
 
 
 def knit(x0, y0, r, surface):
-    '''
+    """
+    Функция отрисовки клубо44ка
     :param x0: центр клубочка по оХ
     :param y0: центр клубочка оУ
     :param r: радиус клубочка
-    '''
+    :param surface: вспомогательная поверхность для отрисовки клубка
+    """
+
     draw.circle(surface, 'grey', (x0, y0), r)
-    draw.circle(surface, 'black', (x0, y0), r, 1)
+    draw.circle(surface, (0, 0, 1), (x0, y0), r, 1)
     draw.arc(surface, (1, 1, 1), (x0 - 0.75 * r, y0 - 0.5 * r, 1.62 * r, 1.75 * r), 0.1 * pi, 0.55 * pi)
     draw.arc(surface, (1, 1, 1), (x0 - 0.875 * r, y0 - 0.375 * r, 1.62 * r, 1.75 * r), 0.1 * pi, 0.55 * pi)
     draw.arc(surface, (1, 1, 1), (x0 - 0.75 * r, y0 - 0.75 * r, 1.62 * r, 1.75 * r), 0.1 * pi, 0.6 * pi)
     draw.arc(surface, (1, 1, 1), (x0 - 0.375 * r, y0 - 0.375 * r, 1.5 * r, 1.62 * r), 0.7 * pi, 1.1 * pi)
     draw.arc(surface, (1, 1, 1), (x0 - 0.25 * r, y0 - 0.25 * r, 1.5 * r, 1.62 * r), 0.7 * pi, 1.1 * pi)
     draw.arc(surface, (1, 1, 1), (x0 - 0.125 * r, y0 - 0.125 * r, 1.5 * r, 1.62 * r), 0.8 * pi, 1.1 * pi)
-    # d.arc(surface, 'grey', (x0 - 1.875 * r, y0 - 0.5 * r, 1.75 * r, 1.87 * r), 1.3 * pi, 1.8 * pi)
-    # d.arc(surface, 'grey', (x0 - 3.225 * r, y0 + 0.9 * r, 2 * r, 1.5 * r), 0.2 * pi, 0.8 * pi)
-
-def rollknit(counter_of_ticks, knit_speed):
-    roll_knit = pygame.Surface((50, 50))
-    knit(25, 25, 25, roll_knit)
-    roll_knit.set_colorkey((0, 0, 0))
-    screen.blit(pygame.transform.rotate(roll_knit, (-1) * counter_of_ticks * knit_speed),
-                (counter_of_ticks * knit_speed, 600 - 50 * sin(counter_of_ticks / 3)))
+    draw.arc(surface, 'grey', (x0 - 1.875 * r, y0 - 0.5 * r, 1.75 * r, 1.87 * r), 1.3 * pi, 1.8 * pi)
+    draw.arc(surface, 'grey', (x0 - 3.225 * r, y0 + 0.9 * r, 2 * r, 1.5 * r), 0.2 * pi, 0.8 * pi)
 
 
-finished = False
-day = True
+def roll_knit(counter_of_ticks, knit_speed_):
+    """
+    Функция отрисовки прыгающего клубка
+    :param counter_of_ticks: количество тиков, прошедших с момента запуска (30 тиков - 1 секунда)
+    :param knit_speed_: скорость клубка
+    """
+
+    roll_knit_ = pygame.Surface((50, 50))  # поверхность, на которой рисуется клубок
+    knit(25, 25, 25, roll_knit_)
+    roll_knit_.set_colorkey((0, 0, 0))
+    screen.blit(pygame.transform.rotate(roll_knit_, (-1) * counter_of_ticks * knit_speed_),
+                (counter_of_ticks * knit_speed_, 600 - 50 * sin(counter_of_ticks / 3)))
+
 
 # background
 draw.rect(screen, (128, 85, 23), (0, 0, 600, 350))
 draw.rect(screen, (195, 144, 20), (0, 350, 600, 450))
 
-knit_speed = 10
-counter_of_ticks = 0
-
 pygame.display.update()
 while not finished:
     clock.tick(FPS)
-    counter_of_ticks += 1
+    counter_of_knit_ticks += 1
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             finished = True
         if event.type == pygame.KEYDOWN:
             day = not day
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            rollknit(counter_of_ticks, knit_speed)
+            counter_of_night_ticks = 0
+        if (event.type == pygame.MOUSEBUTTONDOWN) and (counter_of_knit_ticks > 60):
+            counter_of_knit_ticks = 0
+    if not day:
+        counter_of_night_ticks += 1
     draw.rect(screen, (128, 85, 23), (0, 0, 600, 350))
     draw.rect(screen, (195, 144, 20), (0, 350, 600, 450))
     window(20, 20, 160, 220, day)
     window(280, 20, 200, 220, day)
-    cat(250, 360, 350, 200, day, active_in_night=True)
-    knit(260, 515, 10, screen)
-    cat(150, 550, 200, 150, day, active_in_night=False)
+    cat(250, 360, 350, 200, day, counter_of_night_ticks, active_in_night=False)
+    knit(260, 515, 20, screen)
+    cat(150, 550, 200, 150, day, counter_of_night_ticks, active_in_night=False)
 
-    rollknit(counter_of_ticks, knit_speed)
+    roll_knit(counter_of_knit_ticks, knit_speed)
 
     if not day:
         screen.blit(night_light, (0, 0))
     pygame.display.update()
+    print(counter_of_night_ticks)
 
 pygame.quit()
