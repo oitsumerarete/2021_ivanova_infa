@@ -10,16 +10,19 @@ clock = pygame.time.Clock()
 
 screen = pygame.display.set_mode((600, 800))  # основной экран
 
+
 night_light = pygame.Surface((600, 800))  # поверхность для ночного затемнения
 night_light.fill((58, 58, 58))
 night_light.set_colorkey('BLACK')
 night_light.set_alpha(128)
+
 
 LIGHT_COLOR_WINDOW = (197, 241, 233)  # основные цвета
 DARK_COLOR_WINDOW = (25, 35, 25)
 NIGHT_EYE_COLOR = 'GREEN'
 LIGHT_EYE_COLOR = (60, 150, 60)
 SLEEP_EYE_COLOR = (235, 130, 51)
+
 
 knit_speed = 10  # скорость и время движения прягыющего клубка
 counter_of_knit_ticks = 0
@@ -62,13 +65,13 @@ def cat(x0, y0, length, width, day_, how_long_is_night, how_long_is_day, active_
     :param how_long_is_night: количество ночи в тиках (30 = 1 секунда)
     :param how_long_is_day: количество дня в тиках (30 = 1 секунда)
     """
+
     tale = pygame.Surface((length, width))  # tale
     tale.fill((195, 144, 20))
     draw.ellipse(tale, (255, 140, 51), (0, 0, 0.6 * length, 0.34 * width))
     draw.ellipse(tale, 'BLACK', (0, 0, 0.6 * length, 0.34 * width), 1)
     tale2 = pygame.transform.rotate(tale, 340)
     screen.blit(tale2, (x0 + length * 0.48, y0 + 0.11 * width))
-
     draw.ellipse(screen, (255, 140, 51), (x0 + 0.05 * length, y0 + 0.03 * width, 0.7 * length, 0.65 * width))  # body
     draw.ellipse(screen, 'BLACK', (x0 + 0.05 * length, y0 + 0.03 * width, 0.7 * length, 0.65 * width), 1)
     draw.circle(screen, (255, 140, 51), (x0 + 0.67 * length, y0 + 0.47 * width), 0.12 * length)  # leg circle
@@ -249,6 +252,7 @@ def roll_knit(counter_of_ticks, knit_speed_):
 # background
 draw.rect(screen, (128, 85, 23), (0, 0, 600, 350))
 draw.rect(screen, (195, 144, 20), (0, 350, 600, 450))
+
 
 counter_of_night_ticks = 0
 counter_of_day_ticks = 0
