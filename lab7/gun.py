@@ -3,24 +3,28 @@ import tkinter as tk
 import math
 import time
 
-# print (dir(math))
-WIDTH = 800
-HEIGHT = 600
 root = tk.Tk()
 fr = tk.Frame(root)
 root.geometry('800x600')
 canv = tk.Canvas(root, bg='white')
 canv.pack(fill=tk.BOTH, expand=1)
 
+WIDTH = 800
+HEIGHT = 600
 
-class ball():
+
+class Ball:
     def __init__(self, x=40, y=450):
+        """ Конструктор класса ball
+        Args:
+        x - начальное положение мяча по горизонтали
+        y - начальное положение мяча по вертикали
+        """
         self.x = x
         self.y = y
-        self.r = 10
+        self.r = rnd(10, 20)
         self.vx = 0
         self.vy = 0
-        self.g = 1
         self.color = choice(['blue', 'green', 'red', 'brown'])
         self.id = canv.create_oval(
             self.x - self.r,
@@ -29,7 +33,7 @@ class ball():
             self.y + self.r,
             fill=self.color
         )
-        self.live = 100
+        self.live = 130
 
     def set_coords(self):
         canv.coords(
@@ -42,32 +46,25 @@ class ball():
 
     def move(self):
         """Переместить мяч по прошествии единицы времени.
-        (размер окна 800х600).
+        Метод описывает перемещение мяча за один кадр перерисовки. То есть, обновляет значения
+        self.x и self.y с учетом скоростей self.vx и self.vy, силы гравитации, действующей на мяч,
+        и стен по краям окна (размер окна 800х600).
         """
-
-        self.live -= 1  # жизнь шарика уменьшается при каждом кадре
-        self.vy -= self.g
-
-        if self.x > WIDTH or self.x < 0:
-            self.vx = - self.vx * 0.5 + 1
+        self.vy -= 2
+        if self.x > 790 - self.r or self.x < self.r + 10:
+            self.vx = - 0.9 * self.vx
             self.x += self.vx
-            self.y -= self.vy
-            self.set_coords()
+        if self.y > 570 - self.r:
+            self.vy = - 0.7 * self.vy
+            self.y = 570 - self.r
+            self.vx *= 0.9
+            if 0.05 > self.vx > -0.05:
+                self.vx = 0
 
-        if self.y > HEIGHT - 70 or self.y < 20:
-            self.vy = -  self.vy * 0.8
-            self.vx = self.vx * 0.5
-            self.x += self.vx
-            self.y -= self.vy
-            self.set_coords()
-
-        else:
-            self.x += self.vx
-            self.y -= self.vy
-            self.set_coords()
-
-    def delete(self):
-        canv.delete(self.id)
+        self.x += self.vx
+        self.y -= self.vy - 5
+        self.set_coords()
+        self.live -= 1
 
     def hittest(self, obj):
         """Функция проверяет сталкивалкивается ли данный обьект с целью, описываемой в обьекте obj.
@@ -76,13 +73,25 @@ class ball():
         Returns:
             Возвращает True в случае столкновения мяча и цели. В противном случае возвращает False.
         """
-        if ((obj.x - self.x) ** 2 + (obj.y - self.y) ** 2 <= (self.r + obj.r) ** 2):
+        if ((self.x - obj.x) ** 2 + (self.y - obj.y) ** 2) < (self.r + obj.r) ** 2:
+            return True
+        else:
+            return False
+
+    def delete_ball(self):
+        canv.coords(self.id, -10, -10, -10, -10)
+
+    def decrement(self):
+        self.live -= 1
+
+    def check_alive(self):
+        if self.live == 0:
             return True
         else:
             return False
 
 
-class gun():
+class Gun:
     def __init__(self):
         self.f2_power = 10
         self.f2_on = 0
@@ -99,7 +108,7 @@ class gun():
         """
         global balls, bullet
         bullet += 1
-        new_ball = ball()
+        new_ball = Ball()
         new_ball.r += 5
         self.an = math.atan((event.y - new_ball.y) / (event.x - new_ball.x))
         new_ball.vx = self.f2_power * math.cos(self.an)
@@ -108,7 +117,7 @@ class gun():
         self.f2_on = 0
         self.f2_power = 10
 
-    def targeting(self, event=0):
+    def targetting(self, event=0):
         """Прицеливание. Зависит от положения мыши."""
         if event:
             self.an = math.atan((event.y - 450) / (event.x - 20))
@@ -124,31 +133,36 @@ class gun():
     def power_up(self):
         if self.f2_on:
             if self.f2_power < 100:
-                self.f2_power += 1
+                self.f2_power += 3
             canv.itemconfig(self.id, fill='orange')
         else:
             canv.itemconfig(self.id, fill='black')
 
 
-class target():
+class Target:
     def __init__(self):
         self.points = 0
         self.live = 1
         self.id = canv.create_oval(0, 0, 0, 0)
         self.id_points = canv.create_text(30, 30, text=self.points, font='28')
-        self.new_target()
 
     def new_target(self):
         """ Инициализация новой цели. """
-        x = self.x = rnd(400, 780)
+        x = self.x = rnd(600, 780)
         y = self.y = rnd(300, 550)
-        r = self.r = rnd(2, 50)
+        r = self.r = rnd(10, 50)
 
         vx = self.vx = rnd(10, 20)
         vy = self.vy = rnd(10, 20)
         color = self.color = 'red'
         canv.coords(self.id, x - r, y - r, x + r, y + r)
         canv.itemconfig(self.id, fill=color)
+
+    def hit(self, points=1):
+        """Попадание шарика в цель."""
+        canv.coords(self.id, -10, -10, -10, -10)
+        self.points += points
+        canv.itemconfig(self.id_points, text=self.points)
 
     def move(self):
         """Переместить мяч по прошествии единицы времени.
@@ -180,131 +194,62 @@ class target():
             self.x + self.r,
             self.y + self.r)
 
-    def hit(self, points=1):
-        """Попадание шарика в цель."""
-        canv.coords(self.id, -10, -10, -10, -10)
-        self.points += points
-        canv.itemconfig(self.id_points, text=self.points)
 
-    def __delete__(self):
-        canv.coords(self.id, -10, -10, -10, -10)
-
-
-class target2():
-
-    def __init__(self):
-        self.points = 0
-        self.live = 1
-        self.id = canv.create_oval(0, 0, 0, 0)
-        self.id_points = canv.create_text(100, 30, text=self.points,
-                                          font='28')  # создает вверхнем левом углу счет побитых целей
-        self.new_target()
-
-    def new_target(self):
-        """ Инициализация новой цели. """
-        x = self.x = rnd(100, 780)
-        y = self.y = rnd(300, 550)
-        r = self.r = rnd(2, 50)
-        vx = self.vx = rnd(10, 20)
-        vy = self.vy = rnd(10, 20)
-        color = self.color = 'red'
-        canv.coords(self.id, x - r, y - r, x + r, y + r)
-        canv.itemconfig(self.id, fill=color)
-
-    def move(self):
-        """Переместить мяч по прошествии единицы времени.
-        Метод описывает перемещение мяча за один кадр перерисовки. То есть, обновляет значения
-        self.x и self.y с учетом скоростей self.vx и self.vy, силы гравитации, действующей на мяч,
-        и стен по краям окна (размер окна 800х600).
-        """
-
-        if self.x > WIDTH or self.x < 0:
-            self.vx = -  self.vx
-            self.x += self.vx
-            self.set_coords()
-
-        if self.y + self.r > HEIGHT - 70 or self.y - self.r < 20:
-            self.vy = -  self.vy
-            self.x += self.vx
-            self.y -= self.vy
-            self.set_coords()
-
-        else:
-            self.x += self.vx
-            self.y -= self.vy
-            # vx = self.vx = rnd(0, 10)
-            self.set_coords()
-
-    def set_coords(self):
-        canv.coords(
-            self.id,
-            self.x - self.r,
-            self.y - self.r,
-            self.x + self.r,
-            self.y + self.r)
-
-    def hit(self, points=1):
-        """Попадание шарика в цель."""
-        canv.coords(self.id, -10, -10, -10, -10)  # последние координаты перемещают побитую цель в эти координаты
-        self.points += points
-        canv.itemconfig(self.id_points, text=self.points)
-
-    def __delete__(self):
-        canv.coords(self.id, -10, -10, -10, -10)
-
-
-t1 = target()
-t2 = target2()
+t1 = Target()
 screen1 = canv.create_text(400, 300, text='', font='28')
-g1 = gun()
+g1 = Gun()
 bullet = 0
 balls = []
+hit = False
+count = 0
 
 
 def new_game(event=''):
-    global gun, t1, t2, screen1, balls, bullet
+    global g1, t1, screen1, balls, bullet, hit, count
     t1.new_target()
-    t2.new_target()
     bullet = 0
     balls = []
     canv.bind('<Button-1>', g1.fire2_start)
     canv.bind('<ButtonRelease-1>', g1.fire2_end)
-    canv.bind('<Motion>', g1.targeting)
+    canv.bind('<Motion>', g1.targetting)
 
     z = 0.03
     t1.live = 1
-    t2.live = 1
-
-    while t1.live or t2.live or balls:
+    while t1.live or balls:
         for b in balls:
             b.move()
+
             if b.hittest(t1) and t1.live:
                 t1.live = 0
                 t1.hit()
-            if b.hittest(t2) and t2.live:
-                t2.live = 0
-                t2.hit()
-            if t2.live == 0 and t1.live == 0:
                 canv.itemconfig(screen1, text='Вы уничтожили цель за ' + str(bullet) + ' выстрелов')
+                canv.update()
+                hit = True
 
-        for i in range(len(balls)):
-            if balls[i].live <= 0:
-                balls[i].delete()
-                balls[i] = None
+            if b.check_alive():
+                b.delete_ball()
+                balls.pop(0)
+
+        if hit:
+            count += 1
+
         if t1.live > 0:
             t1.move()
-        if t2.live > 0:
-            t2.move()
-
-        balls = [ball for ball in balls if ball is not None]
-
+        if count == 70:
+            for i in range(len(balls)):
+                balls[i].delete_ball()
+                canv.delete(balls[i])
+            balls = []
+            count = 0
+            hit = False
+            break
         canv.update()
         time.sleep(0.03)
-        g1.targeting()
+        g1.targetting()
         g1.power_up()
-
+        canv.update()
     canv.itemconfig(screen1, text='')
-    canv.delete(gun)
+    canv.delete(Gun)
     root.after(750, new_game)
 
 
